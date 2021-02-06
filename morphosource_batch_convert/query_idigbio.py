@@ -73,27 +73,35 @@ def guess_collections(PossibleCollections, PossibleGenera, Genus):
         CollectionsChoice = user_choose_collection(PossibleCollections)
     return CollectionsChoice
 
-def make_occurrence_df(CollectionsChoice,SpecimensSplit,InstituteCol,CatalogCol):
+def make_occurrence_df(CollectionsChoice,CollectionCol,SpecimensSplit,InstituteCol,CatalogCol,GenusCol,SpeciesCol):
     Collections = [CollectionsChoice]*len(SpecimensSplit)
     OccurrenceIDs = []
+ 
     for i in range(len(SpecimensSplit)):
+        if CollectionCol > 0:
+            CollectionsChoice = SpecimensSplit.iloc[i,CollectionCol]
+            if CollectionsChoice == "fish" and SpecimensSplit.iloc[i,InstituteCol] == "UMMZ":
+                CollectionsChoice = "ummz_fish"
+                SpecimensSplit.iloc[i,CollectionCol] = "ummz_fish"
+   
         Query = {"institutioncode": SpecimensSplit.iloc[i,InstituteCol],
                  "catalognumber": SpecimensSplit.iloc[i,CatalogCol],
                  "collectioncode": CollectionsChoice}
         api = idigbio.json() #shorten
-        
         TempRecords = api.search_records(rq= Query )
-        ## If no results are returned from the query, then we should not return any info on occurrence ids
-        ## but should also not crash the program
         if not bool(TempRecords['items']):
             ## this means that no record was found on idigbio. append an empty item instead
             OccurrenceIDs.append(nan)
         else:
             OccurrenceIDs.append(TempRecords['items'][0]['indexTerms']['occurrenceid'])
-
+           
+    if CollectionCol > 0:
+        Collections = list(SpecimensSplit.iloc[:,CollectionCol])
     SpecimenDictionary = {'Institution': list(SpecimensSplit.iloc[:,InstituteCol]),
                       'Collection' : Collections,
                       'CatalogNumber': list(SpecimensSplit.iloc[:,CatalogCol]),
-                      'OccurrenceID': OccurrenceIDs}
+                      'OccurrenceID': OccurrenceIDs,
+                      'Genus': list(SpecimensSplit.iloc[:,GenusCol]),
+                      'Species': list(SpecimensSplit.iloc[:,SpeciesCol])}
     SpecimenDf = pd.DataFrame.from_dict(SpecimenDictionary)
     return SpecimenDf

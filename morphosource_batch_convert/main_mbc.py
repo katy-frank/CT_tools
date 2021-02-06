@@ -193,21 +193,26 @@ if uc.SEGMENT_BODYPART is None:
 CTdfReorder.index = SpecimensRaw 
 #%% query idigbio #############################################################
 if uc.QUERY_IDIGBIO == True:
-	print('\nStarting iDigBio queries to find occurrence IDs.')
-	PossibleSpecimens = qi.find_options(list(Institutions)[0], list(SpecimenNumbers)[0])
-	PossibleCollections = qi.collections_options(PossibleSpecimens)
-	print('\nHere are possible collection codes based on the first specimen number:')
-	CollectionsChoice = qi.user_choose_collection(PossibleCollections)
-	#for each, pull the Occurrence IDs.
-	SpecimenDf = qi.make_occurrence_df(CollectionsChoice, SpecimensSplit, uc.SEGMENT_MUSEUM, uc.SEGMENT_NUMBER)
-if uc.QUERY_IDIGBIO == False:	
+    print('\nStarting iDigBio queries to find occurrence IDs.')
+    CollectionCol = 0
+    if uc.MULTI_COLLECTION_BATCH and uc.SEGMENT_COLLECTION is not None:
+        CollectionCol = uc.SEGMENT_COLLECTION
+        CollectionsChoice = ""
+    else:
+        PossibleSpecimens = qi.find_options(list(Institutions)[0], list(SpecimenNumbers)[0])
+        PossibleCollections = qi.collections_options(PossibleSpecimens)
+        print('\nHere are possible collection codes based on the first specimen number:')
+        CollectionsChoice = qi.user_choose_collection(PossibleCollections)
+    #for each, pull the Occurrence IDs.
+    SpecimenDf = qi.make_occurrence_df(CollectionsChoice, CollectionCol, SpecimensSplit, uc.SEGMENT_MUSEUM, uc.SEGMENT_NUMBER, uc.SEGMENT_GENUS, uc.SEGMENT_SPECIES)
+if uc.QUERY_IDIGBIO == False:   
     if uc.SEGMENT_COLLECTION is None:
-        SpecimenDf = SpecimensSplit.iloc[:,[uc.SEGMENT_MUSEUM, uc.SEGMENT_MUSEUM, uc.SEGMENT_NUMBER]]
-        SpecimenDf.columns = ["Institution","Collection","CatalogNumber"]
+        SpecimenDf = SpecimensSplit.iloc[:,[uc.SEGMENT_MUSEUM, uc.SEGMENT_MUSEUM, uc.SEGMENT_NUMBER, uc.SEGMENT_NUMBER, uc.SEGMENT_GENUS, uc.SEGMENT_SPECIES]]
+        SpecimenDf.columns = ["Institution","Collection","CatalogNumber","OccurrenceID","Genus","Species"]
         SpecimenDf.assign(Collection=nan)
     if uc.SEGMENT_COLLECTION is not None:
-        SpecimenDf = SpecimensSplit.iloc[:,[uc.SEGMENT_MUSEUM, uc.SEGMENT_COLLECTION, uc.SEGMENT_NUMBER]]
-        SpecimenDf.columns = ["Institution","Collection","CatalogNumber"]
+        SpecimenDf = SpecimensSplit.iloc[:,[uc.SEGMENT_MUSEUM, uc.SEGMENT_COLLECTION, uc.SEGMENT_NUMBER, uc.SEGMENT_NUMBER, uc.SEGMENT_GENUS, uc.SEGMENT_SPECIES]]
+        SpecimenDf.columns = ["Institution","Collection","CatalogNumber","OccurrenceID","Genus","Species"]
     SpecimenDf = SpecimenDf.assign(OccurrenceID=nan)
     if uc.NAME_GENUS is not None:
         Genus = CTdfReorder[uc.NAME_GENUS]
@@ -332,7 +337,7 @@ if MeshNames[0] != []:
     for name in MeshNamesUnique:
         #Check to make sure each mesh matches a file name
         if name not in list(NamePartsSpec):
-            print(f"Mesh ID {name} cannot be matched to raw file.")
+            print("Mesh ID {name} cannot be matched to raw file.")
         if list(NamePartsMesh).count(name) > 1: #Check for multiple meshes per name:
             NeedSuffix = True
     if NeedSuffix == True:

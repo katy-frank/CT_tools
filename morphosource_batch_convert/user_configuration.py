@@ -12,16 +12,16 @@ If you are not going to use a variable, don't leave it blank. Write 'None' inste
 """
 #%% File Paths ################################################################
 #path to folder where all your inputs are stored
-INPUT_PATH = 'C:/Users/N.S/Dropbox/test' 
+INPUT_PATH = 'F:\morphosource_batch_convert' 
 
 #The name of the folder containing files to batch upload.
-UPLOAD_FOLDER = ''
+UPLOAD_FOLDER = 'Upload'
 #UPLOAD_FOLDER = None
 
 #The rest of your metadata should come from either a series of CT metadata files
     #or a spreadsheet.
 #The name of the folder containing CT metadata files.
-CT_METADATA_FOLDER = ''
+CT_METADATA_FOLDER = 'Metadata'
 #CT_METADATA_FOLDER = None
 
 #If CT scan metadata is already in a spreadsheet, enter file name. 
@@ -29,23 +29,28 @@ CT_METADATA_FOLDER = ''
 #CT_METADATA_FILE = 'ctscan_batch_sample1.csv'
 CT_METADATA_FILE = None
 #If have additional metadata in a separate spreadsheet (.csv or .xlsx), put that file name here
-#OTHER_METADATA_FILE = 'ForConversion_Mio08-09.xlsx'
 OTHER_METADATA_FILE = None
+#OTHER_METADATA_FILE = None
 #Spreadsheet file options:
     #if you have a single spreadsheet with both CT metadata and other data,
     #then use only CT_METADATA_FILE and set OTHER_METADATA_FILE to None.
    
 #Name of final output spreadsheet file, assuming same location as input
     #note no file ending. Will write to .xlsx
-OUTPUT_FILE = 'test_result'
+OUTPUT_FILE = 'MorphoSourceBatchImportWorksheet'
 #%% Fundamental setup choices #################################################
 #determine oVert now, as will set downstream choices.
 #oVert: Is this upload part of the oVert TCN grant?
-OVERT = False
+OVERT = True
 #Batch: Are there batch scans in the upload?
 BATCH = False
 #Query iDigBio: Do you want to search the iDigBio database to fill in Collection and Occurrence ID?
 QUERY_IDIGBIO = False
+
+# When querying idigbio (i.e. when the above is set to 'True'), set this to true if you have multiple collections
+# Will override the collection name returned by idigbio in favor of the one in the filename
+MULTI_COLLECTION_BATCH = False
+
 #%% File name parsing #########################################################
 #User needs to set how a file name will be parsed into a specimen
     #In oVert, the recommended file naming convention is:
@@ -54,13 +59,15 @@ QUERY_IDIGBIO = False
     #or a genus name, or some other note. Notes are optional. 
 #Set how a name will be broken into pieces. Default is space, dash, or underscore
     #Note that dash and underscore both need a backslash in front of them (ex: '\_')
-DELIMITER = '[\-\_\ ]' 
+DELIMITER = '[\_\- ]' 
 #After a name is broken up by the delimiter, set which segment corresponds to which part.
 #The count begins at 0, so indicate the first segment with 0, the second segment with 1, etc.
 SEGMENT_MUSEUM = 0
 SEGMENT_COLLECTION = 1
 SEGMENT_NUMBER = 2
-SEGMENT_BODYPART = 3
+SEGMENT_GENUS = 3
+SEGMENT_SPECIES = 4
+SEGMENT_BODYPART = None
 #%% oVert-specific settings ###################################################
 #### TCN Institutions
 #0: University of Washington
@@ -80,11 +87,11 @@ SEGMENT_BODYPART = 3
 #14: Yale University
 #15: University of California-San Diego Scripps Inst of Oceanography
 #Choose either number corresponding to institute or type 'None'.
-GRANT_SCANNING_INSTITUTION = 5
-GRANT_SPECIMEN_PROVIDER = None
+GRANT_SCANNING_INSTITUTION = 10
+GRANT_SPECIMEN_PROVIDER = 10
 #%% Media Permissions #########################################################
 #Name of the copyright holder. Also used as the entity granting permission.
-PROVIDER = "Florida Museum of Natural History"
+PROVIDER = "University of Michigan Museum of Zoology"
 
 #### Copyright Permission Options:
 #0: Copyright permission not set
@@ -109,12 +116,6 @@ COPY_PERMISSION = 2
 #9: Unknown - Will set before project publication
 MEDIA_POLICY = 3
 
-#### Publication status: oVert prefers 2, but check with your institution
-#0: unpublished
-#1: published, with unrestricted download
-#2: published, with request to download necessary
-DOWNLOAD_POLICY = 2
-
 #%% CT metadata ###############################################################
 ##Are the CT metadata still in a series of raw CT output files, 
 #    #or are they already in the input spreadsheet?
@@ -122,10 +123,10 @@ DOWNLOAD_POLICY = 2
 
 #Add additional CT settings that aren't always in raw output files:
 #Write the name of the scanning technician in quotes
-TECHNICIAN = 'Natasha Vitek'
+TECHNICIAN = 'Ramon Nagesan, Shion Otsuka'
 
 #Write what wedge was use in scanning, if any, in quotes.
-WEDGE = "amaranth"
+WEDGE = None
 
 #If you include shading, flux, or geometric calibrations, respectively, change to True.
 CALIBRATION_SHADE = True
@@ -168,7 +169,12 @@ NAME_BATCH = 'Batch'
 #Enter any grant funding as a string in quotes
 FUNDING_SOURCE = 'NSF DBI-1756306'
 #this is the column name containing element information
-NAME_ELEMENT = None
+NAME_ELEMENT = 'Element'
+#What is the download policy?
+#0: "Not published / Not available in public search" 
+#1: "Published / available in public search and for download"
+#2: "Published / available in public search / users must request download permission" (2).
+DOWNLOAD_POLICY = 0
 #this is the column name containing which side of the body an element comes from
 #Note: when populating this column, text options are:
 #Not Applicable [use for 'whole body'], Unknown, Left, Right, Midline
